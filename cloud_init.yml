@@ -1,0 +1,29 @@
+#cloud-config
+
+install:
+  auto: true
+  reboot: true
+  device: /dev/vda
+
+stages:
+  initramfs:
+    - name: "Set user and password"
+      users:
+        kairos:
+          passwd: "kairos"
+      hostname: ${hostname}
+
+%{ if hostname == "kairos-master" ~}
+k3s:
+  enabled: true
+  env:
+    K3S_TOKEN: "d393d7a87510fa17d0783bfc74287c5d"
+  args:
+    - --cluster-init
+%{ else ~}
+k3s-agent:
+  enabled: true
+  env:
+    K3S_TOKEN: "d393d7a87510fa17d0783bfc74287c5d"
+    K3S_URL: "https://${network}:6443"
+%{ endif ~}
